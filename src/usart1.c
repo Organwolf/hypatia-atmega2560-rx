@@ -67,10 +67,10 @@ char usart1_getChar(void){
 
 ISR(USART1_RX_vect)
 {
-	uint8_t test;
-	test = usart1_getChar();
- 	char str[20];
- 	sprintf(str, "rec: %d\n",test);
-	 uart_write_str(str);
- 	//uart_putChar(str);
+// 	uint8_t test;
+// 	test = usart1_getChar();
+// 	char str[20];
+// 	sprintf(str, "rec: %d\n",test);
+// 	uart_write_str(str);
+//	uart_putChar(str);
 }

@@ -7,7 +7,6 @@
 #include "uart.h"
 #include "recievedData.h"
 
-uint8_t t = 0;
 int main (void)
 {
 	/* Insert system clock initialization code here (sysclk_init()). */
@@ -16,6 +15,11 @@ int main (void)
 	sei();
 	usart1_init();
 	uart_init();
+
+	uint8_t test = usart1_getChar();
+	char str[20];
+	sprintf(str, "val: %d",test);
+	uart_write_str(str);
 	
 	while(1){
 		//do nothing
