@@ -67,10 +67,24 @@ char usart1_getChar(void){
 
 ISR(USART1_RX_vect)
 {
-	uint8_t test;
+	volatile uint8_t test;
 	test = usart1_getChar();
- 	char str[20];
- 	sprintf(str, "rec: %d\n",test);
-	 uart_write_str(str);
- 	//uart_putChar(str);
+	//test = usart1_getChar();		//varför måste vi hämta en "dummy" byte innan faktiska datan?
+	
+
+	volatile uint8_t testArr[8] = {0};
+	
+	for(volatile uint8_t i=0; i<8; i++){
+		if((test & (1<<i)) !=0){
+			testArr[7-i] = 1;
+		}
+	}
+	volatile uint8_t actualData = recievedData(testArr);
+	if(counter==20){
+		char str[20];
+		sprintf(str,"%d",test);
+		uart_write_str(str);
+		counter=0;
+	}
+	counter++;
 }

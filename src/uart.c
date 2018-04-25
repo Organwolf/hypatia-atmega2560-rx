@@ -72,7 +72,7 @@ void uart_write_str(char *str){
 		str++;
 	}
 
-	uart_append_serial('\r');
+	//uart_append_serial('\r');
 
 	/*
 	 * If we reach the end of earlier transmission, we need to reset the buffer
