@@ -5,7 +5,6 @@
 #include "usart1.h"
 #include <stdio.h>
 #include "uart.h"
-#include "recievedData.h"
 
 uint8_t t = 0;
 int main (void)

@@ -12,19 +12,18 @@
 #include <stdio.h>
 #include "../common.h"
 #include "usart1.h"
-#include "recievedData.h"
 #include <avr/interrupt.h>
 #include "uart.h"
 
 #define MYUBRR  (unsigned int)(F_CPU/16/BAUD-1)
 #define RADDR 0x05		//0x55
 
-volatile uint8_t lastchar = 0;
 volatile uint8_t counter = 0;
-volatile uint8_t recPower = 0;
-volatile uint16_t four = 0;
-volatile uint16_t total = 1;
-volatile uint16_t period = 1;
+volatile uint8_t xPos[3] = {0};
+volatile uint8_t yPos[3] = {0};
+volatile uint8_t xCtr = 0;
+volatile uint8_t yCtr = 0;
+
 
 static int usart1_putchar(char c, FILE *unused)
 {
@@ -69,17 +68,6 @@ ISR(USART1_RX_vect)
 {
 	volatile uint8_t test;
 	test = usart1_getChar();
-	//test = usart1_getChar();		//varför måste vi hämta en "dummy" byte innan faktiska datan?
-	
-
-	volatile uint8_t testArr[8] = {0};
-	
-	for(volatile uint8_t i=0; i<8; i++){
-		if((test & (1<<i)) !=0){
-			testArr[7-i] = 1;
-		}
-	}
-	volatile uint8_t actualData = recievedData(testArr);
 	if(counter==20){
 		char str[20];
 		sprintf(str,"%d",test);
