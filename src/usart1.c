@@ -68,11 +68,8 @@ ISR(USART1_RX_vect)
 {
 	volatile uint8_t test;
 	test = usart1_getChar();
-	if(counter==20){
-		char str[20];
-		sprintf(str,"%d",test);
-		uart_write_str(str);
-		counter=0;
-	}
-	counter++;
+	char str[20];
+	sprintf(str,"%d",test);
+	uart_write_str(str);
+
 }
