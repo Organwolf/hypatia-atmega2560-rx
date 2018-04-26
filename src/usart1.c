@@ -2,7 +2,7 @@
 * File name: usart1.c
 *
 * Description: A rudimentary USART1 driver for the ATMega 2560 chip
-* 
+*
 *
 * Created: 2016-04-05
 * Author: alex.rodzevski@gmail.com and Filip Nilsson.
@@ -21,10 +21,12 @@
 volatile uint8_t test;
 volatile uint8_t counter = 0;
 volatile uint8_t flag = 0;
+volatile uint8_t pos[6] = {0};
 volatile uint8_t xPos[3] = {0};
 volatile uint8_t yPos[3] = {0};
-volatile uint8_t xCtr = 0;
-volatile uint8_t yCtr = 0;
+
+// volatile uint8_t xCtr = 0;
+// volatile uint8_t yCtr = 0;
 
 
 static int usart1_putchar(char c, FILE *unused)
@@ -68,6 +70,7 @@ char usart1_getChar(void){
 
 ISR(USART1_RX_vect)
 {
+	char str[20];
 	test = usart1_getChar();
 	if(test == SYNC){
 		uart_write_str("Sync");
@@ -75,7 +78,7 @@ ISR(USART1_RX_vect)
 		counter=0;
 	}
 	else if(flag==1){
-		char str[20];
+		pos[counter] = test;
 		sprintf(str,"%d",test);
 		uart_write_str(str);
 		counter++;
@@ -83,6 +86,4 @@ ISR(USART1_RX_vect)
 			flag=0;
 		}
 	}
-
-	
 }
