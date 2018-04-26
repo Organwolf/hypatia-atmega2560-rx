@@ -16,9 +16,11 @@
 #include "uart.h"
 
 #define MYUBRR  (unsigned int)(F_CPU/16/BAUD-1)
-#define RADDR 0x05		//0x55
+#define SYNC 0b01010101
 
+volatile uint8_t test;
 volatile uint8_t counter = 0;
+volatile uint8_t flag = 0;
 volatile uint8_t xPos[3] = {0};
 volatile uint8_t yPos[3] = {0};
 volatile uint8_t xCtr = 0;
@@ -66,10 +68,21 @@ char usart1_getChar(void){
 
 ISR(USART1_RX_vect)
 {
-	volatile uint8_t test;
 	test = usart1_getChar();
-	char str[20];
-	sprintf(str,"%d",test);
-	uart_write_str(str);
+	if(test == SYNC){
+		uart_write_str("Sync");
+		flag=1;
+		counter=0;
+	}
+	else if(flag==1){
+		char str[20];
+		sprintf(str,"%d",test);
+		uart_write_str(str);
+		counter++;
+		if(counter==6){
+			flag=0;
+		}
+	}
 
+	
 }
