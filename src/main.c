@@ -18,6 +18,11 @@ int main (void)
 	sei();
 	usart1_init();
 	uart_init();
+
+	uint8_t test = usart1_getChar();
+	char str[20];
+	sprintf(str, "val: %d",test);
+	uart_write_str(str);
 	
 	
 	while(1){

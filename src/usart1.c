@@ -66,6 +66,7 @@ char usart1_getChar(void){
 
 ISR(USART1_RX_vect)
 {
+<<<<<<< HEAD
 	char str[20];
 	test = usart1_getChar();
 	if(test == SYNC){
@@ -82,4 +83,12 @@ ISR(USART1_RX_vect)
 			flag=0;
 		}
 	}
+=======
+// 	uint8_t test;
+// 	test = usart1_getChar();
+// 	char str[20];
+// 	sprintf(str, "rec: %d\n",test);
+// 	uart_write_str(str);
+//	uart_putChar(str);
+>>>>>>> 2ea4b984e6d11169fc8626ec846a613c13a5bb8f
 }
