@@ -6,22 +6,15 @@
  */ 
 #include <asf.h>
 #include <util/twi.h>
+#include "I2C_Client.h"
 
 #define F_CPU 16000000UL
-#define nbrOfBytes 30
+#define nbrOfBytes 10
+
 
 volatile uint8_t TWI_Command = 1;
 volatile uint8_t TWI_datatrack = 0;				//tracks how much data has been sent
-volatile uint8_t buffertx[nbrOfBytes] ={1,7,4,    //Avlämning X
-										2,5,5,    //Avlämning Y
-										1,8,0,    //Kub X
-										3,7,4,    //Kub Y
-										3,1,2,    //Kula X
-										0,0,7,    //Kula Y
-										3,6,7,    //Glas X
-										4,0,0,    //Glas Y
-										1,4,2,    //Robot X
-										3,5,0};   //Robot Y
+
 
 
 void I2C_Client_Init(uint8_t adress){
@@ -43,8 +36,6 @@ void I2C_Client_Init(uint8_t adress){
 ISR(TWI_vect){
 	// set pin to low if interrupt is called
 	ioport_set_port_level(IOPORT_PORTD, (1<<PD6), IOPORT_PIN_LEVEL_LOW);
-	// dummy variable to store data
-	uint8_t data;
 	
 	if (TW_STATUS == TW_SR_STOP){		// stop command or repeated start, set slave to prepare to be addressed. if repeated start likely going to be addressed again but as transmitter
 		TWCR |= (1<<TWINT)|(1<<TWEA)|(1<<TWEN);
@@ -52,7 +43,7 @@ ISR(TWI_vect){
 		} else if (TW_STATUS == TW_ST_SLA_ACK) {	// if slave address comes up with read command (slave is transmitter)
 		
 		if (TWI_Command == 1){					// commands 1 (currently) are the commands that require transmission
-			TWDR = buffertx[TWI_datatrack];
+			TWDR = pos[TWI_datatrack];
 			TWI_datatrack++;
 			TWCR = (1<<TWINT)|(0<<TWSTO)|(1<<TWEA)|(1<<TWEN)|(1<<TWIE);
 
@@ -62,7 +53,7 @@ ISR(TWI_vect){
 		}
 
 		} else if (TW_STATUS == TW_ST_DATA_ACK){	// if there is still more transmitting to do
-		TWDR = buffertx[TWI_datatrack];
+		TWDR = pos[TWI_datatrack];
 		TWI_datatrack++;
 		
 		if (TWI_datatrack == nbrOfBytes) {// is this data byte the last one to be sent?, if yes prepare to receive nack
