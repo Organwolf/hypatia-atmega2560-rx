@@ -21,9 +21,7 @@
 volatile uint8_t test;
 volatile uint8_t counter = 0;
 volatile uint8_t flag = 0;
-extern volatile uint8_t pos[30] = {0};
-volatile uint8_t xPos[3] = {0};
-volatile uint8_t yPos[3] = {0};
+extern volatile uint8_t pos[10] = {0};
 
 static int usart1_putchar(char c, FILE *unused)
 {
@@ -66,20 +64,24 @@ char usart1_getChar(void){
 
 ISR(USART1_RX_vect)
 {
+	/* Do we need to stop the TWI_vect interrupt by setting TWINT to '0' in TWCR... */
+	
 	char str[20];
 	test = usart1_getChar();
 	if(test == SYNC){
 		uart_write_str("Sync");
 		flag=1;
-		counter=0;
+		counter=8;
 	}
 	else if(flag==1){
 		pos[counter] = test;
 		sprintf(str,"%d",test);
 		uart_write_str(str);
 		counter++;
-		if(counter==30){
+		if(counter==10){
 			flag=0;
 		}
 	}
+	
+	/*... if so start the interrupt here*/
 }
