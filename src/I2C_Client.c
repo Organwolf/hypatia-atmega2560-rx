@@ -34,6 +34,7 @@ void I2C_Client_Init(uint8_t adress){
 		TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWEA)|(1<<TWINT);
 }
 ISR(TWI_vect){
+	/* Do we need to stop the USART1 interrupt... */
 	// set pin to low if interrupt is called
 	ioport_set_port_level(IOPORT_PORTD, (1<<PD6), IOPORT_PIN_LEVEL_LOW);
 	
@@ -70,4 +71,5 @@ ISR(TWI_vect){
 		} else {									// (command not recognized, state not accounted for), clear flag, set to prepare for next addressing
 		TWCR |= (1<<TWINT)|(1<<TWEA)|(1<<TWEN);
 	}
+	/*... if so start the interrupt here*/
 }
