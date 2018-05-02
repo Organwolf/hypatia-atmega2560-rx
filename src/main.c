@@ -8,7 +8,7 @@
 #include "recievedData.h"
 #include "I2C_Client.h"
 
-uint8_t SlaveAddress = 0x08;
+uint8_t SlaveAddress = 0x10;
 
 int main (void)
 {
@@ -18,16 +18,8 @@ int main (void)
 	sei();
 	usart1_init();
 	uart_init();
-
-	uint8_t test = usart1_getChar();
-	char str[20];
-	sprintf(str, "val: %d",test);
-	uart_write_str(str);
-	
 	
 	while(1){
 		//do nothing
 	}
-
-	/* Insert application code here, after the board has been initialized. */
 }
