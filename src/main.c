@@ -1,10 +1,12 @@
 /**
  *
  */
+#include <avr/io.h>
 #include <asf.h>
 #include "usart1.h"
 #include <stdio.h>
 #include "uart.h"
+
 
 uint8_t t = 0;
 int main (void)
@@ -15,7 +17,7 @@ int main (void)
 	sei();
 	usart1_init();
 	uart_init();
-	
+/*	DDRD |= (1<<PA4);*/
 	while(1){
 		//do nothing
 	}

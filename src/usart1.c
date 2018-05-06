@@ -9,6 +9,7 @@
 */
 
 #include <avr/io.h>
+#include <asf.h>
 #include <stdio.h>
 #include "../common.h"
 #include "usart1.h"
@@ -17,16 +18,13 @@
 
 #define MYUBRR  (unsigned int)(F_CPU/16/BAUD-1)
 #define SYNC 0b01010101
+#define MY_PIN    IOPORT_CREATE_PIN(PORTA, 4)
 
 volatile uint8_t test;
-volatile uint8_t counter = 0;
+volatile uint16_t counter = 0;
+volatile uint16_t nbrOfTransmits = 0;
 volatile uint8_t flag = 0;
-volatile uint8_t pos[6] = {0};
-volatile uint8_t xPos[3] = {0};
-volatile uint8_t yPos[3] = {0};
-
-// volatile uint8_t xCtr = 0;
-// volatile uint8_t yCtr = 0;
+volatile uint8_t c = 0;
 
 
 static int usart1_putchar(char c, FILE *unused)
@@ -49,9 +47,12 @@ void usart1_init(void)
 	/* Enable interrupt */
 	UCSR1B |= (1<<RXCIE1);
 	/* Set frame format: Async, No parity, 1 stop bit, 8 data */
-	UCSR1C = (3<<UCSZ01);
+	UCSR1C = (3<<UCSZ00);
 	/* Re-rout stdout (printf) to use internal uart_putchar */
 	stdout = &mystdout;
+	ioport_init();
+	
+	ioport_set_pin_dir(MY_PIN, IOPORT_DIR_OUTPUT);
 }
 
 
@@ -70,20 +71,38 @@ char usart1_getChar(void){
 
 ISR(USART1_RX_vect)
 {
+	//PORTA = ~(1 << PA4);
 	char str[20];
+	ioport_set_pin_level(MY_PIN, 1);
 	test = usart1_getChar();
-	if(test == SYNC){
-		uart_write_str("Sync");
-		flag=1;
+	c++;
+	if(test==200){		//Tog emot correct data?
+		counter++;
+	}
+	nbrOfTransmits++;
+	if(nbrOfTransmits==85){					//Skriv ut hur många som togs emot rätt
+		sprintf(str,"%d/%d",counter,85);
+		uart_write_str(str);
+		nbrOfTransmits=0;
 		counter=0;
 	}
-	else if(flag==1){
-		pos[counter] = test;
-		sprintf(str,"%d",test);
-		uart_write_str(str);
-		counter++;
-		if(counter==6){
-			flag=0;
-		}
+	if(c==2){
+		ioport_set_pin_level(MY_PIN, 0);
+		c=0;
 	}
+	//PORTA |= (1 << PA4);
+// 	if(test == SYNC){
+// 		uart_write_str("Sync");
+// 		flag=1;
+// 		counter=0;
+// 	}
+// 	else if(flag==1){
+// 		pos[counter] = test;
+// 		sprintf(str,"%d",test);
+// 		uart_write_str(str);
+// 		counter++;
+// 		if(counter==6){
+// 			flag=0;
+// 		}
+// 	}
 }
