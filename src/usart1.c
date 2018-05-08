@@ -17,13 +17,19 @@
 #include "uart.h"
 
 #define MYUBRR  (unsigned int)(F_CPU/16/BAUD-1)
-#define SYNC 0b01010101
+#define SYNC 0b11110101
 #define MY_PIN    IOPORT_CREATE_PIN(PORTA, 4)
 
 volatile uint8_t test;
 volatile uint16_t counter = 0;
 volatile uint16_t nbrOfTransmits = 0;
-volatile uint8_t flag = 0;
+volatile uint8_t index2 = 0;
+volatile uint8_t byteCounter=0;
+volatile uint8_t flag = 1;
+volatile uint8_t xSamples[20] = {0};
+volatile uint8_t ySamples[20] = {0};
+volatile uint8_t newX = 0;
+volatile uint8_t newY = 0;
 volatile uint8_t c = 0;
 
 
@@ -69,23 +75,88 @@ char usart1_getChar(void){
 	return UDR1;
 }
 
+int findMajority(volatile uint8_t arr[], volatile uint8_t n)
+{
+	int maxCount = 0;
+	int index = -1;
+	for(int i = 0; i < n; i++)
+	{
+		int count = 0;
+		for(int j = 0; j < n; j++)
+		{
+			if(arr[i] == arr[j])
+			count++;
+		}
+		//new maxCount found
+		if(count > maxCount)
+		{
+			maxCount = count;
+			index = i;
+		}
+	}
+	//Majority found!
+	if (maxCount > n/2){
+		return arr[index];
+	}
+	//No majority found
+	else{
+		return -1;
+	}
+}
+
 ISR(USART1_RX_vect)
 {
-	//PORTA = ~(1 << PA4);
 	char str[20];
 	ioport_set_pin_level(MY_PIN, 1);
 	test = usart1_getChar();
-	c++;
-	if(test==200){		//Tog emot correct data?
-		counter++;
+	if((test==SYNC)){
+		index2=0;
+		byteCounter=0;
+		newX=findMajority(xSamples,20);
+		newY=findMajority(ySamples,20);
+		if((newX>=0 && newX<=200) && (newY>=0 && newY<=200)){	//Game area
+			sprintf(str,"x: %d y: %d",newX,newY);
+			uart_write_str(str);
+		}
 	}
-	nbrOfTransmits++;
-	if(nbrOfTransmits==85){					//Skriv ut hur många som togs emot rätt
-		sprintf(str,"%d/%d",counter,85);
-		uart_write_str(str);
-		nbrOfTransmits=0;
-		counter=0;
+	else if(index2==0){
+		xSamples[byteCounter++]=test;
+		if(byteCounter==20){
+			index2++;
+			byteCounter=0;
+		}
 	}
+	else{
+		ySamples[byteCounter++]=test;
+	}
+	
+	
+// 	if(test==SYNC){
+// 		counter=0;
+// 	}
+// 	else{
+// 		arr[counter]=test;
+// 		counter++;
+// 	}
+// 	if(counter==7){
+// 		uint8_t majority = findMajority(arr,counter);
+// 		if(majority!=-1){
+// 			sprintf(str,"%d",majority);
+// 			uart_write_str(str);
+// 		}
+// 	}
+	
+// 	if((test^5)<2){		//Tog emot correct data?
+// 		counter++;
+// 	}
+ 	c++;
+// 	nbrOfTransmits++;
+// 	if(nbrOfTransmits==7){					//Skriv ut hur många som togs emot rätt
+// 		sprintf(str,"%d/%d",counter,7);
+// 		uart_write_str(str);
+// 		nbrOfTransmits=0;
+// 		counter=0;
+// 	}
 	if(c==2){
 		ioport_set_pin_level(MY_PIN, 0);
 		c=0;

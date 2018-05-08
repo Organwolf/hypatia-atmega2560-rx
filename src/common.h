@@ -15,7 +15,7 @@
 #endif
 #include <util/delay.h>
 
-#define BAUD    1200		//9600
+#define BAUD    2400		//9600
 
 /* TODO: Define RTC 7-bit slave address */
 #define DS1307                  (uint8_t)0x68

@@ -20,6 +20,7 @@ int main (void)
 /*	DDRD |= (1<<PA4);*/
 	while(1){
 		//do nothing
+		//ioport_set_pin_level(IOPORT_CREATE_PIN(PORTA, 4), 1);
 	}
 
 	/* Insert application code here, after the board has been initialized. */

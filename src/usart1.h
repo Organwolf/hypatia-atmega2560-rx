@@ -13,5 +13,9 @@
 void usart1_init(void);
 void usart1_transmit(unsigned char data);
 char usart1_getChar(void);
+/************************************************************************/
+/* Find the majority element within an array                            */
+/************************************************************************/ 
+int findMajority(volatile uint8_t arr[], volatile uint8_t n);
 
 #endif /* UART_H_ */
