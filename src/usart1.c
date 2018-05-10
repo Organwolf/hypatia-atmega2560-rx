@@ -4,24 +4,33 @@
 * Description: A rudimentary USART1 driver for the ATMega 2560 chip
 *
 *
-* Created: 2016-04-05
-* Author: alex.rodzevski@gmail.com and Filip Nilsson.
+* Created: 2018-05-10
+* Author: Filip Nilsson and Aron Polner.
 */
 
 #include <avr/io.h>
+#include <asf.h>
 #include <stdio.h>
 #include "../common.h"
 #include "usart1.h"
 #include <avr/interrupt.h>
 #include "uart.h"
 
-#define MYUBRR  (unsigned int)(F_CPU/16/BAUD-1)
-#define SYNC 0b01010101
+#define MYUBRR  (unsigned int)(F_CPU/16/BAUD-1)		//Value to be put in UBBR
+#define SYNC 0b11110101								//Dec: 245, Safe value for identifying a new packet
+#define MY_PIN    IOPORT_CREATE_PIN(PORTB, 7)		//Onboard LED, used for debugging
 
-volatile uint8_t test;
-volatile uint8_t counter = 0;
-volatile uint8_t flag = 0;
 extern volatile uint8_t pos[10] = {0};
+volatile uint8_t rec;
+volatile uint16_t nbrOfTransmits = 0;
+volatile uint8_t theIndex = 0;
+volatile uint8_t byteCounter=0;
+volatile uint8_t xSamples[10] = {0};
+volatile uint8_t ySamples[10] = {0};
+volatile uint8_t majorityX = 0;
+volatile uint8_t majorityY = 0;
+volatile uint8_t c = 0;
+
 
 static int usart1_putchar(char c, FILE *unused)
 {
@@ -43,9 +52,12 @@ void usart1_init(void)
 	/* Enable interrupt */
 	UCSR1B |= (1<<RXCIE1);
 	/* Set frame format: Async, No parity, 1 stop bit, 8 data */
-	UCSR1C = (3<<UCSZ01);
+	UCSR1C = (3<<UCSZ00);
 	/* Re-rout stdout (printf) to use internal uart_putchar */
 	stdout = &mystdout;
+	ioport_init();
+	
+	ioport_set_pin_dir(MY_PIN, IOPORT_DIR_OUTPUT);
 }
 
 
@@ -62,26 +74,65 @@ char usart1_getChar(void){
 	return UDR1;
 }
 
-ISR(USART1_RX_vect)
+uint8_t findMajority(volatile uint8_t arr[], volatile uint8_t n)
 {
-	/* Do we need to stop the TWI_vect interrupt by setting TWINT to '0' in TWCR... */
-	
-	char str[20];
-	test = usart1_getChar();
-	if(test == SYNC){
-		uart_write_str("Sync");
-		flag=1;
-		counter=8;
-	}
-	else if(flag==1){
-		pos[counter] = test;
-		sprintf(str,"%d",test);
-		uart_write_str(str);
-		counter++;
-		if(counter==10){
-			flag=0;
+	int maxCount = 0;
+	int index = -1;
+	for(int i = 0; i < n; i++)
+	{
+		int count = 0;
+		for(int j = 0; j < n; j++)
+		{
+			if(arr[i] == arr[j])
+			count++;
+		}
+		if(count > maxCount)//new maxCount found
+		{
+			maxCount = count;
+			index = i;
 		}
 	}
-	
-	/*... if so start the interrupt here*/
+	if (maxCount > n/2){	//Majority found!
+		return arr[index];
+	}
+	else{					//No majority found
+		return 255;			//"Safe" value, outside of gamearea
+	}
+}
+
+ISR(USART1_RX_vect)
+{
+	char str[20];
+	rec = usart1_getChar();
+	if((rec==SYNC)){
+		theIndex=0;
+		byteCounter=0;
+		majorityX=findMajority(xSamples,10);
+		majorityY=findMajority(ySamples,10);
+		if((majorityX>=0 && majorityX<=200) && (majorityY>=0 && majorityY<=200)){	//Game area
+			TWCR |= ~(1<<TWIE);	//We don't want the TWI-master to disrupt between here...
+			pos[8]=majorityX;	//byteindex for robot X
+			pos[9]=majorityY;	//byteindex for robot Y
+			ioport_set_pin_level(MY_PIN, 1);	//Show the a new majority has been recieved.
+			//sprintf(str,"x: %d y: %d",pos[8],pos[9]);
+			sprintf(str,"%d %d %d %d %d %d %d %d %d %d",pos[0],pos[1],pos[2],pos[3],pos[4],pos[5],pos[6],pos[7],pos[8],pos[9]);
+			uart_write_str(str);
+			TWCR |=(1<<TWIE);	//...and here
+		}
+	}
+	else if(theIndex==0){
+		xSamples[byteCounter++]=rec;
+		if(byteCounter==10){
+			theIndex++;
+			byteCounter=0;
+		}
+	}
+	else{
+		ySamples[byteCounter++]=rec;
+	}
+ 	c++;
+	if(c==2){
+		ioport_set_pin_level(MY_PIN, 0);
+		c=0;
+	}
 }
