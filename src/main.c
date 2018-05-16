@@ -7,7 +7,7 @@
 #include "uart.h"
 #include "I2C_Client.h"
 
-uint8_t SlaveAddress = 0x10;
+uint8_t SlaveAddress = 0x08;		//0x10
 
 int main (void)
 {

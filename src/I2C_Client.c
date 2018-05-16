@@ -7,6 +7,8 @@
 #include <asf.h>
 #include <util/twi.h>
 #include "I2C_Client.h"
+#include <stdio.h>
+#include "uart.h"
 
 #define F_CPU 16000000UL
 #define nbrOfBytes 10		//When the master requests, the client returns 10bytes
@@ -33,7 +35,7 @@ void I2C_Client_Init(uint8_t adress){
 	TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWEA)|(1<<TWINT);
 }
 ISR(TWI_vect){
-	/*UCSR1B |= ~(1<<RXCIE1); Do we need to stop the USART1 interrupt... */
+	//UCSR1B |= ~(1<<RXCIE1); //Do we need to stop the USART1 interrupt... 
 	// set pin to low if interrupt is called
 	ioport_set_port_level(IOPORT_PORTD, (1<<PD6), IOPORT_PIN_LEVEL_LOW);
 	
@@ -59,7 +61,7 @@ ISR(TWI_vect){
 		if (TWI_datatrack == nbrOfBytes) {// is this data byte the last one to be sent?, if yes prepare to receive nack
 			TWI_datatrack = 0;
 			TWCR = (1<<TWINT)|(0<<TWSTO)|(0<<TWEA)|(1<<TWEN)|(1<<TWIE);
-			/*UCSR1B |= (1<<RXCIE1); Do we need to start the USART1 interrupt... */
+			//UCSR1B |= (1<<RXCIE1); //Do we need to start the USART1 interrupt... 
 
 			} else {
 			TWCR = (1<<TWINT)|(0<<TWSTO)|(1<<TWEA)|(1<<TWEN)|(1<<TWIE);

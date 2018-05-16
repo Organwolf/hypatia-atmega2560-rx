@@ -20,7 +20,7 @@
 #define SYNC 0b11110101								//Dec: 245, Safe value for identifying a new packet
 #define MY_PIN    IOPORT_CREATE_PIN(PORTB, 7)		//Onboard LED, used for debugging
 
-extern volatile uint8_t pos[10] = {0};
+extern volatile uint8_t pos[10] = {149,200,149,50,149,139,49,149,0,0};
 volatile uint8_t rec;
 volatile uint16_t nbrOfTransmits = 0;
 volatile uint8_t theIndex = 0;
@@ -110,14 +110,14 @@ ISR(USART1_RX_vect)
 		majorityX=findMajority(xSamples,10);
 		majorityY=findMajority(ySamples,10);
 		if((majorityX>=0 && majorityX<=200) && (majorityY>=0 && majorityY<=200)){	//Game area
-			TWCR |= ~(1<<TWIE);	//We don't want the TWI-master to disrupt between here...
+			//TWCR |= ~(1<<TWIE);	//We don't want the TWI-master to disrupt between here...
 			pos[8]=majorityX;	//byteindex for robot X
 			pos[9]=majorityY;	//byteindex for robot Y
 			ioport_set_pin_level(MY_PIN, 1);	//Show the a new majority has been recieved.
 			//sprintf(str,"x: %d y: %d",pos[8],pos[9]);
-			sprintf(str,"%d %d %d %d %d %d %d %d %d %d",pos[0],pos[1],pos[2],pos[3],pos[4],pos[5],pos[6],pos[7],pos[8],pos[9]);
-			uart_write_str(str);
-			TWCR |=(1<<TWIE);	//...and here
+			//sprintf(str,"%d %d %d %d %d %d %d %d %d %d",pos[0],pos[1],pos[2],pos[3],pos[4],pos[5],pos[6],pos[7],pos[8],pos[9]);
+			//uart_write_str(str);
+			//TWCR |=(1<<TWIE);	//...and here
 		}
 	}
 	else if(theIndex==0){
