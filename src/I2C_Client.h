@@ -10,7 +10,7 @@
 #define I2C_CLIENT_H_
 
 extern volatile uint8_t pos[];
-void I2C_Client_Init(uint8_t adress);
+void I2C_Client_Init(uint8_t address);
 
 
 
