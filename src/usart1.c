@@ -1,12 +1,14 @@
 /*
-* File name: usart1.c
-*
-* Description: A rudimentary USART1 driver for the ATMega 2560 chip
-*
-*
-* Created: 2018-05-10
-* Author: Filip Nilsson and Aron Polner.
-*/
+ * usart1.c
+ *
+ * For USART communication the TX1 is used. 
+ * 2400 Baudrate, 8-bit
+ * Predetermined data packets, see below. 
+ *
+ * Created: 2018-05-20
+ * Author: Filip Nilsson
+ * 
+ */ 
 
 #include <avr/io.h>
 #include <asf.h>
@@ -20,7 +22,7 @@
 #define SYNC 0b11110101								//Dec: 245, Safe value for identifying a new packet
 #define MY_PIN    IOPORT_CREATE_PIN(PORTB, 7)		//Onboard LED, used for debugging
 
-extern volatile uint8_t pos[10] = {149,200,149,50,149,139,49,149,0,0};
+extern volatile uint8_t pos[10] = {149,200,149,50,149,139,49,149,0,0};	//Index 0-7: predetermined. 8-9 coordinates for robot.
 volatile uint8_t rec;
 volatile uint16_t nbrOfTransmits = 0;
 volatile uint8_t theIndex = 0;
@@ -30,7 +32,6 @@ volatile uint8_t ySamples[10] = {0};
 volatile uint8_t majorityX = 0;
 volatile uint8_t majorityY = 0;
 volatile uint8_t c = 0;
-
 
 static int usart1_putchar(char c, FILE *unused)
 {
@@ -74,6 +75,11 @@ char usart1_getChar(void){
 	return UDR1;
 }
 
+/************************************************************************/
+/* Used to determine if there is a majority element present within a certain array. */
+/* If a majority is present, the value of it is returned.							*/
+/* Otherwise the value 255 is returned, indicating that no majority is present      */
+/************************************************************************/
 uint8_t findMajority(volatile uint8_t arr[], volatile uint8_t n)
 {
 	int maxCount = 0;
@@ -100,6 +106,10 @@ uint8_t findMajority(volatile uint8_t arr[], volatile uint8_t n)
 	}
 }
 
+/************************************************************************/
+/* USART1 interrupt routine.											*/
+/* Data packet: |theSync|+|10 times X|+|10 times Y|						*/                                                                    
+/************************************************************************/
 ISR(USART1_RX_vect)
 {
 	char str[20];
@@ -110,14 +120,12 @@ ISR(USART1_RX_vect)
 		majorityX=findMajority(xSamples,10);
 		majorityY=findMajority(ySamples,10);
 		if((majorityX>=0 && majorityX<=200) && (majorityY>=0 && majorityY<=200)){	//Game area
-			//TWCR |= ~(1<<TWIE);	//We don't want the TWI-master to disrupt between here...
 			pos[8]=majorityX;	//byteindex for robot X
 			pos[9]=majorityY;	//byteindex for robot Y
 			ioport_set_pin_level(MY_PIN, 1);	//Show the a new majority has been recieved.
 			//sprintf(str,"x: %d y: %d",pos[8],pos[9]);
 			//sprintf(str,"%d %d %d %d %d %d %d %d %d %d",pos[0],pos[1],pos[2],pos[3],pos[4],pos[5],pos[6],pos[7],pos[8],pos[9]);
 			//uart_write_str(str);
-			//TWCR |=(1<<TWIE);	//...and here
 		}
 	}
 	else if(theIndex==0){

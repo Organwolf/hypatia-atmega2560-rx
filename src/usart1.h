@@ -3,8 +3,8 @@
  *
  * Description: Header file for the driver implemented in usart1.c
  *
- * Created: 2018-05-10
- * Author: Filip Nilsson and Aron Polner
+ * Created: 2018-05-20
+ * Author: Filip Nilsson
  */ 
 
 #ifndef UART_H_
