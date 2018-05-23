@@ -22,7 +22,7 @@
 #define SYNC 0b11110101								//Dec: 245, Safe value for identifying a new packet
 #define MY_PIN    IOPORT_CREATE_PIN(PORTB, 7)		//Onboard LED, used for debugging
 
-extern volatile uint8_t pos[10] = {149,200,149,50,149,139,49,149,0,0};	//Index 0-7: predetermined. 8-9 coordinates for robot.
+extern volatile uint8_t pos[10] = {150,200,50,150,100,100,150,50,0,0};	//Index 0-7: predetermined. 8-9 coordinates for robot.
 volatile uint8_t rec;
 volatile uint16_t nbrOfTransmits = 0;
 volatile uint8_t theIndex = 0;
@@ -43,6 +43,9 @@ static int usart1_putchar(char c, FILE *unused)
 
 FILE mystdout = FDEV_SETUP_STREAM(usart1_putchar, NULL, _FDEV_SETUP_WRITE);
 
+/************************************************************************/
+/* Initialize the USART1.                                                                     */
+/************************************************************************/
 void usart1_init(void)
 {
 	/* Set baud rate */
@@ -61,7 +64,9 @@ void usart1_init(void)
 	ioport_set_pin_dir(MY_PIN, IOPORT_DIR_OUTPUT);
 }
 
-
+/************************************************************************/
+/* Used to transmit a new Byte through USART1.                            */
+/************************************************************************/
 void usart1_transmit(unsigned char data)
 {
 	/* Wait for empty transmit buffer */
@@ -69,6 +74,10 @@ void usart1_transmit(unsigned char data)
 	/* Start transmission by loading data into the buffer */
 	UDR1 = data;
 }
+
+/************************************************************************/
+/* Used to receive a new Byte on the USART1.                            */
+/************************************************************************/
 
 char usart1_getChar(void){
 	while (!( UCSR1A & (1<<RXC1)));
@@ -120,13 +129,15 @@ ISR(USART1_RX_vect)
 		majorityX=findMajority(xSamples,10);
 		majorityY=findMajority(ySamples,10);
 		if((majorityX>=0 && majorityX<=200) && (majorityY>=0 && majorityY<=200)){	//Game area
+		//if ((majorityX!=245) && (majorityY!=245)){		//Majority found?
 			pos[8]=majorityX;	//byteindex for robot X
 			pos[9]=majorityY;	//byteindex for robot Y
 			ioport_set_pin_level(MY_PIN, 1);	//Show the a new majority has been recieved.
-			//sprintf(str,"x: %d y: %d",pos[8],pos[9]);
+			//sprintf(str,"x: %d y: %d",(uint16_t)(pos[8]*2),(uint16_t)(pos[9]*2));
 			//sprintf(str,"%d %d %d %d %d %d %d %d %d %d",pos[0],pos[1],pos[2],pos[3],pos[4],pos[5],pos[6],pos[7],pos[8],pos[9]);
 			//uart_write_str(str);
 		}
+		//}
 	}
 	else if(theIndex==0){
 		xSamples[byteCounter++]=rec;

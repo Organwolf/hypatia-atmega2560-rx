@@ -17,6 +17,11 @@
 
 uint8_t clientAddress = 0x10;		//Master requests from this address.
 
+
+/************************************************************************/
+/* Main function.                                                       */
+/* Contains different initializations.									*/
+/************************************************************************/
 int main (void)
 {
 	I2C_Client_Init(clientAddress);
