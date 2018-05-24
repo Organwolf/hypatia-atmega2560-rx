@@ -66,9 +66,9 @@ ISR(TWI_vect){
 		TWCR |= (1<<TWINT)|(1<<TWEA)|(1<<TWEN);
 		
 	} else if (TW_STATUS == TW_ST_SLA_ACK){	
-				TWDR = pos[TWI_datatrack];
-				TWI_datatrack++;
-				TWCR = (1<<TWINT)|(0<<TWSTO)|(1<<TWEA)|(1<<TWEN)|(1<<TWIE);
+		TWDR = pos[TWI_datatrack];
+		TWI_datatrack++;
+		TWCR = (1<<TWINT)|(0<<TWSTO)|(1<<TWEA)|(1<<TWEN)|(1<<TWIE);
 
 	} else if (TW_STATUS == TW_ST_DATA_ACK){
 		TWDR = pos[TWI_datatrack];
@@ -79,13 +79,13 @@ ISR(TWI_vect){
 			TWCR = (1<<TWINT)|(0<<TWSTO)|(0<<TWEA)|(1<<TWEN)|(1<<TWIE); 
 
 		} else{
-		TWCR = (1<<TWINT)|(0<<TWSTO)|(1<<TWEA)|(1<<TWEN)|(1<<TWIE);
+			TWCR = (1<<TWINT)|(0<<TWSTO)|(1<<TWEA)|(1<<TWEN)|(1<<TWIE);
 		}
 
 	} else if (TW_STATUS == TW_ST_LAST_DATA){
-	TWCR = (1<<TWINT)|(0<<TWSTA)|(0<<TWSTO)|(1<<TWEA)|(1<<TWEN)|(1<<TWIE);
+		TWCR = (1<<TWINT)|(0<<TWSTA)|(0<<TWSTO)|(1<<TWEA)|(1<<TWEN)|(1<<TWIE);
 
 	} else {									
-	TWCR |= (1<<TWINT)|(1<<TWEA)|(1<<TWEN);
+		TWCR |= (1<<TWINT)|(1<<TWEA)|(1<<TWEN);
 	}
 }
