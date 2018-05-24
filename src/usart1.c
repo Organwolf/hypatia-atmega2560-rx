@@ -44,7 +44,7 @@ static int usart1_putchar(char c, FILE *unused)
 FILE mystdout = FDEV_SETUP_STREAM(usart1_putchar, NULL, _FDEV_SETUP_WRITE);
 
 /************************************************************************/
-/* Initialize the USART1.                                                                     */
+/* Initialize the USART1.                                               */
 /************************************************************************/
 void usart1_init(void)
 {
@@ -65,7 +65,7 @@ void usart1_init(void)
 }
 
 /************************************************************************/
-/* Used to transmit a new Byte through USART1.                            */
+/* Used to transmit a new Byte through USART1.                          */
 /************************************************************************/
 void usart1_transmit(unsigned char data)
 {
@@ -84,11 +84,11 @@ char usart1_getChar(void){
 	return UDR1;
 }
 
-/************************************************************************/
+/************************************************************************************/
 /* Used to determine if there is a majority element present within a certain array. */
 /* If a majority is present, the value of it is returned.							*/
 /* Otherwise the value 255 is returned, indicating that no majority is present      */
-/************************************************************************/
+/************************************************************************************/
 uint8_t findMajority(volatile uint8_t arr[], volatile uint8_t n)
 {
 	int maxCount = 0;
